@@ -3,7 +3,6 @@
   "version": "3.2.37",
   "description": "Graphical User Interface for creating and running Scratch 3.0 projects",
   "author": "Massachusetts Institute of Technology",
-  "packageManager": "pnpm@10.33.0",
   "license": "GPL-3.0",
   "homepage": "https://github.com/LLK/scratch-gui#readme",
   "repository": {
@@ -12,7 +11,7 @@
   },
   "main": "./dist/scratch-gui.js",
   "scripts": {
-    "build": "pnpm run clean && webpack --colors --bail",
+    "build": "npm run clean && webpack --colors --bail",
     "clean": "rimraf ./build && mkdirp build && rimraf ./dist && mkdirp dist",
     "deploy": "touch build/.nojekyll && gh-pages -t -d build -m \"[skip ci] Build for $(git log --pretty=format:%H -n1)\"",
     "prepublish": "node scripts/prepublish.mjs",
@@ -20,7 +19,7 @@
     "i18n:push": "tx-push-src scratch-editor interface translations/en.json",
     "i18n:src": "rimraf ./translations/messages/src && babel src > tmp.js && rimraf tmp.js && build-i18n-src ./translations/messages/src ./translations/",
     "start": "webpack-dev-server",
-    "test": "pnpm run test:lint && pnpm run test:unit && pnpm run build && pnpm run test:integration",
+    "test": "npm run test:lint && npm run test:unit && npm run build && npm run test:integration",
     "test:integration": "jest --maxWorkers=4 test[\\\\/]integration",
     "test:lint": "eslint . --ext .js,.jsx",
     "test:unit": "jest test[\\\\/]unit[\\\\/]addons",
@@ -161,12 +160,5 @@
     "webpack@4.47.0": {
       "terser-webpack-plugin": "^4.2.3"
     }
-  },
-  "pnpm": {
-    "onlyBuiltDependencies": [
-      "chromedriver",
-      "core-js",
-      "scratch-blocks"
-    ]
   }
 }
