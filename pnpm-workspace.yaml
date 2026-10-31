@@ -1,0 +1,5 @@
+allowBuilds:
+  chromedriver: true
+  core-js: true
+  scratch-blocks@https://codeload.github.com/TurboWarp/scratch-blocks/tar.gz/4113c5348e6b4c76da9071a1800a62ab96ef793f: true
+blockExoticSubdeps: false

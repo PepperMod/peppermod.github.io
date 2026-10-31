@@ -1,50 +1,68 @@
-name: Build and Deploy
-
 on:
   workflow_dispatch:
+    inputs:
+      semver:
+        description: "Semver (leave blank if not making release, example '1.0.0')"
+        type: string
+        required: false
   push:
-    branches: [develop]
+    branches:
+      - develop
+  pull_request:
 
 permissions:
-  contents: read
+  contents: write
   pages: write
   id-token: write
 
 concurrency:
-  group: "deploy"
+  group: "${{ github.workflow }}-${{ github.head_ref || github.ref }}"
   cancel-in-progress: true
 
 jobs:
   build:
     runs-on: ubuntu-latest
-
     steps:
-    - uses: actions/checkout@v4
+    - name: Checkout
+      uses: actions/checkout@v6-beta
+    - name: Setup GitHub Pages
+      uses: actions/configure-pages@v5.0.0
+      
+    - name: Install pnpm
+      uses: pnpm/action-setup@v4
       with:
-        persist-credentials: false
+        version: 12
     - name: Install Node.js
-      uses: actions/setup-node@v4
+      uses: actions/setup-node@v6.0.0
       with:
-        node-version: 22
-        cache: npm
-    - run: npm install --legacy-peer-deps
-    - run: npm run build
-    - run: npm run test:unit
-      env:
-        NODE_ENV: production
-        ROUTING_STYLE: hash
-    - name: Upload pages artifact
-      uses: actions/upload-pages-artifact@v3
+        node-version: 24
+        cache: 'pnpm'
+
+    - name: Install dependencies
+      run: pnpm install --no-frozen-lockfile
+	  - name: Run prepublish
+      run: node scripts/prepublish.mjs
+    - name: Build site
+      run: NODE_ENV="production" pnpm exec webpack --bail
+      
+    - name: Upload artifact 
+      uses: actions/upload-pages-artifact@v4.0.0
       with:
         path: ./build/
-
-  deploy:
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    runs-on: ubuntu-latest
-    needs: build
-    steps:
     - name: Deploy to GitHub Pages
-      id: deployment
-      uses: actions/deploy-pages@v4
+      if: github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/develop' && inputs.semver
+      uses: actions/deploy-pages@v4.0.5
+
+    - name: Make zip for release
+      if: github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/develop' && inputs.semver
+      run: |
+        cd ./build/
+        zip -r ../peppermod-v${{ inputs.semver }}.zip .
+    - name: Create release
+      if: github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/develop' && inputs.semver
+      uses: ncipollo/release-action@v1.21.0
+      with:
+        tag: "v${{ inputs.semver }}"
+        name: "v${{ inputs.semver }}"
+        commit: develop
+        artifacts: "peppermod-v${{ inputs.semver }}.zip"
