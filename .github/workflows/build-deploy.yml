@@ -32,7 +32,8 @@ jobs:
         node-version: 22
         cache: pnpm
     - run: pnpm install --no-frozen-lockfile
-    - run: NODE_ENV="production" pnpm exec webpack --bail
+    - run: pnpm run prepublish
+    - run: pnpm run build
       env:
         NODE_ENV: production
         ROUTING_STYLE: hash
