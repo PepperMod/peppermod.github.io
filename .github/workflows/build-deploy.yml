@@ -30,7 +30,6 @@ jobs:
         node-version: 22
         cache: pnpm
     - run: pnpm install --no-frozen-lockfile
-    - run: pnpm run prepublish
     - run: pnpm run build
       env:
         NODE_ENV: production
